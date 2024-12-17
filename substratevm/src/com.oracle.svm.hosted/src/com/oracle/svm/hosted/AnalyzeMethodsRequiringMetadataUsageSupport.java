@@ -135,7 +135,7 @@ public final class AnalyzeMethodsRequiringMetadataUsageSupport {
         }
     }
 
-    public void reportReflection() {
+    public void reportMethodUsage() {
         Map<String, Map<String, List<String>>> callMaps = Map.of(
                         METHODTYPE_REFLECTION, this.reflectiveCalls,
                         METHODTYPE_RESOURCE, this.resourceCalls,

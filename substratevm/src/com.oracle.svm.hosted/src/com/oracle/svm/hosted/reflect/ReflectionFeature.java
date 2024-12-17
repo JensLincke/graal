@@ -371,7 +371,7 @@ public class ReflectionFeature implements InternalFeature, ReflectionSubstitutio
     @Override
     public void beforeCompilation(BeforeCompilationAccess access) {
         if (AnalyzeMethodsRequiringMetadataUsageSupport.Options.TrackMethodsRequiringMetadata.getValue() != null) {
-            AnalyzeMethodsRequiringMetadataUsageSupport.instance().reportReflection();
+            AnalyzeMethodsRequiringMetadataUsageSupport.instance().reportMethodUsage();
         }
 
         metaAccess = ((BeforeCompilationAccessImpl) access).getMetaAccess();
