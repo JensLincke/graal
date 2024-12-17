@@ -25,8 +25,7 @@
 package com.oracle.svm.hosted.phases;
 
 import com.oracle.graal.pointsto.meta.AnalysisType;
-import com.oracle.svm.core.jni.functions.JNIFunctions;
-import com.oracle.svm.hosted.AnalyzeMethodsRequiringMetadataUsageSupport;
+import com.oracle.svm.hosted.AnalyzeMethodsRequiringMetadataUsageFeature;
 import jdk.graal.compiler.graph.NodeSourcePosition;
 import jdk.graal.compiler.nodes.StructuredGraph;
 import jdk.graal.compiler.nodes.java.MethodCallTargetNode;
@@ -62,17 +61,17 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.random.RandomGeneratorFactory;
 
-import static com.oracle.svm.hosted.AnalyzeMethodsRequiringMetadataUsageSupport.METHODTYPE_PROXY;
-import static com.oracle.svm.hosted.AnalyzeMethodsRequiringMetadataUsageSupport.METHODTYPE_REFLECTION;
-import static com.oracle.svm.hosted.AnalyzeMethodsRequiringMetadataUsageSupport.METHODTYPE_RESOURCE;
-import static com.oracle.svm.hosted.AnalyzeMethodsRequiringMetadataUsageSupport.METHODTYPE_SERIALIZATION;
+import static com.oracle.svm.hosted.AnalyzeMethodsRequiringMetadataUsageFeature.METHODTYPE_PROXY;
+import static com.oracle.svm.hosted.AnalyzeMethodsRequiringMetadataUsageFeature.METHODTYPE_REFLECTION;
+import static com.oracle.svm.hosted.AnalyzeMethodsRequiringMetadataUsageFeature.METHODTYPE_RESOURCE;
+import static com.oracle.svm.hosted.AnalyzeMethodsRequiringMetadataUsageFeature.METHODTYPE_SERIALIZATION;
 
 /**
  * This phase detects usages of any calls that might require metadata in reached parts of the
  * project, given the JAR files in which to search, and outputs and serializes them to the
  * image-build output. It is an optional phase that happens before
  * {@link com.oracle.graal.pointsto.results.StrengthenGraphs} by using the
- * {@link AnalyzeMethodsRequiringMetadataUsageSupport.Options#TrackMethodsRequiringMetadata} option
+ * {@link AnalyzeMethodsRequiringMetadataUsageFeature.Options#TrackMethodsRequiringMetadata} option
  * and providing the desired JAR path/s.
  */
 
@@ -190,9 +189,9 @@ public class AnalyzeMethodsRequiringMetadataUsagePhase extends BasePhase<CorePro
                         nspToShow = nspToShow.getCaller();
                     }
                     int bci = nspToShow.getBCI();
-                    if (!AnalyzeMethodsRequiringMetadataUsageSupport.instance().containsFoldEntry(bci, nspToShow.getMethod())) {
+                    if (!AnalyzeMethodsRequiringMetadataUsageFeature.instance().containsFoldEntry(bci, nspToShow.getMethod())) {
                         String callLocation = nspToShow.getMethod().asStackTraceElement(bci).toString();
-                        AnalyzeMethodsRequiringMetadataUsageSupport.instance().addCall(methodType, methodName, callLocation);
+                        AnalyzeMethodsRequiringMetadataUsageFeature.instance().addCall(methodType, methodName, callLocation);
                     }
                 }
             }
@@ -231,7 +230,7 @@ public class AnalyzeMethodsRequiringMetadataUsagePhase extends BasePhase<CorePro
                 return false;
             }
 
-            return AnalyzeMethodsRequiringMetadataUsageSupport.instance().getJarPaths().contains(jarPathURL.toURI().getPath());
+            return AnalyzeMethodsRequiringMetadataUsageFeature.instance().getJarPaths().contains(jarPathURL.toURI().getPath());
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }

@@ -68,7 +68,7 @@ public class SubstrateStrengthenGraphs extends StrengthenGraphs {
 
     public SubstrateStrengthenGraphs(Inflation bb, Universe converter) {
         super(bb, converter);
-        trackMetadataRequiringMethodUsage = AnalyzeMethodsRequiringMetadataUsageSupport.Options.TrackMethodsRequiringMetadata.hasBeenSet();
+        trackMetadataRequiringMethodUsage = AnalyzeMethodsRequiringMetadataUsageFeature.Options.TrackMethodsRequiringMetadata.hasBeenSet();
         trackJavaHomeAccess = AnalyzeJavaHomeAccessFeature.Options.TrackJavaHomeAccess.getValue();
         trackJavaHomeAccessDetailed = AnalyzeJavaHomeAccessFeature.Options.TrackJavaHomeAccessDetailed.getValue();
     }

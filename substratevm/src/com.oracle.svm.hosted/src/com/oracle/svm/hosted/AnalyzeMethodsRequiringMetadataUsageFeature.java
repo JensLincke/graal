@@ -25,11 +25,12 @@
 package com.oracle.svm.hosted;
 
 import com.oracle.svm.core.BuildArtifacts;
+import com.oracle.svm.core.feature.AutomaticallyRegisteredFeature;
+import com.oracle.svm.core.feature.InternalFeature;
 import com.oracle.svm.core.option.AccumulatingLocatableMultiOptionValue;
 import com.oracle.svm.core.option.HostedOptionKey;
 import com.oracle.svm.core.option.HostedOptionValues;
 import com.oracle.svm.hosted.phases.AnalyzeMethodsRequiringMetadataUsagePhase;
-import jdk.graal.compiler.debug.GraalError;
 import jdk.graal.compiler.options.Option;
 import jdk.graal.compiler.util.json.JsonBuilder;
 import jdk.graal.compiler.util.json.JsonWriter;
@@ -53,7 +54,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * This is a support class that keeps track of calls requiring metadata usage detected during
  * {@link AnalyzeMethodsRequiringMetadataUsagePhase} and outputs them to the image-build output.
  */
-public final class AnalyzeMethodsRequiringMetadataUsageSupport {
+@AutomaticallyRegisteredFeature
+public final class AnalyzeMethodsRequiringMetadataUsageFeature implements InternalFeature {
     public static final String METHODTYPE_REFLECTION = "reflection";
     public static final String METHODTYPE_RESOURCE = "resource";
     public static final String METHODTYPE_SERIALIZATION = "serialization";
@@ -65,18 +67,16 @@ public final class AnalyzeMethodsRequiringMetadataUsageSupport {
     private final Set<String> jarPaths;
     private final Set<FoldEntry> foldEntries = ConcurrentHashMap.newKeySet();
 
-    public AnalyzeMethodsRequiringMetadataUsageSupport() {
+    public AnalyzeMethodsRequiringMetadataUsageFeature() {
         this.reflectiveCalls = new TreeMap<>();
         this.resourceCalls = new TreeMap<>();
         this.serializationCalls = new TreeMap<>();
         this.proxyCalls = new TreeMap<>();
-        this.jarPaths = Collections.unmodifiableSet(new HashSet<>(AnalyzeMethodsRequiringMetadataUsageSupport.Options.TrackMethodsRequiringMetadata.getValue().values()));
+        this.jarPaths = Collections.unmodifiableSet(new HashSet<>(AnalyzeMethodsRequiringMetadataUsageFeature.Options.TrackMethodsRequiringMetadata.getValue().values()));
     }
 
-    public static AnalyzeMethodsRequiringMetadataUsageSupport instance() {
-        AnalyzeMethodsRequiringMetadataUsageSupport trus = ImageSingletons.lookup(AnalyzeMethodsRequiringMetadataUsageSupport.class);
-        GraalError.guarantee(trus != null, "Should never be null.");
-        return trus;
+    public static AnalyzeMethodsRequiringMetadataUsageFeature instance() {
+        return ImageSingletons.lookup(AnalyzeMethodsRequiringMetadataUsageFeature.class);
     }
 
     public void addCall(String methodType, String call, String callLocation) {
@@ -196,6 +196,11 @@ public final class AnalyzeMethodsRequiringMetadataUsageSupport {
      */
     public boolean containsFoldEntry(int bci, ResolvedJavaMethod method) {
         return this.foldEntries.contains(new FoldEntry(bci, method));
+    }
+
+    @Override
+    public void beforeCompilation(BeforeCompilationAccess access) {
+        AnalyzeMethodsRequiringMetadataUsageFeature.instance().reportMethodUsage();
     }
 
     public static class Options {

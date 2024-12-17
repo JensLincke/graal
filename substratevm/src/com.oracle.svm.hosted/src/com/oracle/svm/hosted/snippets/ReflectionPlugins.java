@@ -48,7 +48,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.oracle.svm.hosted.AnalyzeMethodsRequiringMetadataUsageSupport;
+import com.oracle.svm.hosted.AnalyzeMethodsRequiringMetadataUsageFeature;
 import org.graalvm.nativeimage.ImageSingletons;
 import org.graalvm.nativeimage.hosted.RuntimeReflection;
 import org.graalvm.nativeimage.impl.RuntimeClassInitializationSupport;
@@ -122,7 +122,7 @@ public final class ReflectionPlugins {
     private final FallbackFeature fallbackFeature;
     private final ClassInitializationSupport classInitializationSupport;
 
-    private final boolean analyzeReflectionUsage;
+    private final boolean analyzeMethodsRequiringMetadataUsage;
 
     private ReflectionPlugins(ImageClassLoader imageClassLoader, AnnotationSubstitutionProcessor annotationSubstitutions,
                     ClassInitializationPlugin classInitializationPlugin, AnalysisUniverse aUniverse, ParsingReason reason, FallbackFeature fallbackFeature) {
@@ -132,7 +132,7 @@ public final class ReflectionPlugins {
         this.aUniverse = aUniverse;
         this.reason = reason;
         this.fallbackFeature = fallbackFeature;
-        this.analyzeReflectionUsage = AnalyzeMethodsRequiringMetadataUsageSupport.Options.TrackMethodsRequiringMetadata.hasBeenSet();
+        this.analyzeMethodsRequiringMetadataUsage = AnalyzeMethodsRequiringMetadataUsageFeature.Options.TrackMethodsRequiringMetadata.hasBeenSet();
 
         this.classInitializationSupport = (ClassInitializationSupport) ImageSingletons.lookup(RuntimeClassInitializationSupport.class);
     }
@@ -577,8 +577,8 @@ public final class ReflectionPlugins {
         }
 
         b.add(ReachabilityRegistrationNode.create(() -> registerForRuntimeReflection((T) receiverValue, registrationCallback), reason));
-        if (analyzeReflectionUsage) {
-            AnalyzeMethodsRequiringMetadataUsageSupport.instance().addFoldEntry(b.bci(), b.getMethod());
+        if (analyzeMethodsRequiringMetadataUsage) {
+            AnalyzeMethodsRequiringMetadataUsageFeature.instance().addFoldEntry(b.bci(), b.getMethod());
         }
         return true;
     }
